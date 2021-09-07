@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
+
+
+contract VolcanoCoin is ERC721("Volcano Token", "VOL"), Ownable{
+    uint256 tokenID;
+    uint256 tokenLimit=10;
+    uint256 counter;
+    
+    struct Metadata{
+       uint timestamp;
+       uint tokenID;
+       string tokenURI;
+    }
+    
+    mapping(address=>Metadata[]) public OwnershipRecord;
+    Metadata[] ListOfTokensMeta;
+    
+    
+    event tokenFound(address owner, uint256 tokenID);
+    
+
+
+constructor(){
+    
+}    
+
+    
+    function mint(string memory _comment) public {
+        require(tokenID<tokenLimit, "limit has been exceeded!");
+        address _to=msg.sender;
+        _safeMint(_to, tokenID++);
+        Metadata memory tokenMeta = Metadata( block.timestamp, tokenID,string(abi.encodePacked(_comment, Strings.toString(tokenID))));
+        OwnershipRecord[_to].push(tokenMeta);
+        
+    }
+    
+    
+    function burn(uint _tokeID) public {
+        require(ownerOf(_tokeID)==msg.sender, "you are not entitled");
+        burningLoop(_tokeID);
+    }
+    
+    function burningLoop(uint _tokenID) internal {
+        for (uint i = 0; i < OwnershipRecord[msg.sender].length; i++) {
+            if (OwnershipRecord[msg.sender][i].tokenID==_tokenID){
+                _burn(OwnershipRecord[msg.sender][i].tokenID);
+                emit tokenFound(msg.sender, _tokenID);
+                popToken(i);
+                break;
+            }
+        }
+    }
+    function popToken(uint i) internal{
+        require(OwnershipRecord[msg.sender].length>i,"Ledger has been already modified");
+        delete OwnershipRecord[msg.sender][i];
+    }
+}
