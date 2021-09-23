@@ -7,11 +7,11 @@ contract GasContract is Ownable {
     uint256 public totalSupply = 0;
     uint256 paymentCounter = 1;
 
-    address [5] public administrators;
+    address [5] private administrators;
     enum PaymentType { Unknown, BasicPayment, Refund, Dividend, GroupPayment }
     PaymentType constant defaultPayment = PaymentType.Unknown;
 
-    mapping(address => uint256) public balances;
+    mapping(address => uint256) private balances;
     mapping(address => Payment[]) payments;
     mapping(address=>uint256) lastUpdateRecord; // when a payment record was last for a user   
 
@@ -32,9 +32,9 @@ contract GasContract is Ownable {
         _;
     }
 
-    event supplyChanged(address indexed, uint256 indexed);
-    event Transfer(address indexed, uint256);
-    event PaymentUpdated(address indexed admin, uint256 indexed ID, uint256 indexed amount, string  recipient);
+    event supplyChanged(address, uint256);
+    event Transfer(address, uint256);
+    event PaymentUpdated(address admin, uint256 ID, uint256 amount, string recipient);
 
 
    constructor(address[] memory _admins) {
@@ -55,13 +55,11 @@ contract GasContract is Ownable {
         }
     }
 
-    function updateTotalSupply() public onlyOwner {
-      uint _total = totalSupply + 1000;
-      balances[msg.sender] = _total;
-      totalSupply = balances[msg.sender];
-      emit supplyChanged(msg.sender,_total);
+   function updateTotalSupply() public onlyOwner {
+      totalSupply = totalSupply + 1000;
+      balances[msg.sender] = totalSupply;
+      emit supplyChanged(msg.sender,totalSupply);
    }
-
 
    function checkForAdmin(address _user) public view returns (bool) {
        bool admin = false;
@@ -88,19 +86,16 @@ contract GasContract is Ownable {
       payments[msg.sender].push(payment);
    }
      
-        function updatePayment(address _user, uint256 _ID, uint128 _amount) public onlyAdmin {
+    function updatePayment(address _user, uint256 _ID, uint128 _amount) public onlyAdmin {
         require(_ID > 0,"Gas Contract - Update Payment function - ID must be greater than 0");
         require(_amount > 0,"Gas Contract - Update Payment function - Amount must be greater than 0");
         require(_user != address(0) ,"Gas Contract - Update Payment function - Administrator must have a valid non zero address");
-        for (uint256 ii=0;ii<payments[_user].length;ii++){
-            Payment storage thisPayment = payments[_user][ii];
-            uint256 lastUpdate = block.timestamp;
-            address updatedBy = msg.sender;
-            
-            if(thisPayment.paymentID==_ID){
-               thisPayment.lastUpdate =  lastUpdate;
-               thisPayment.updatedBy = updatedBy;
-               thisPayment.amount = _amount;
+        
+        for (uint256 ii=0;ii<payments[_user].length;ii++){            
+            if(payments[_user][ii].paymentID==_ID){
+               payments[_user][ii].lastUpdate =  block.timestamp;
+               payments[_user][ii].updatedBy = msg.sender;
+               payments[_user][ii].amount = _amount;
                lastUpdateRecord[msg.sender] = block.timestamp;
                emit PaymentUpdated(msg.sender, _ID, _amount,payments[_user][ii].recipientName);
             }
