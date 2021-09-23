@@ -88,17 +88,15 @@ contract GasContract is Ownable {
       payments[msg.sender].push(payment);
    }
      
-    function updatePayment(address _user, uint256 _ID, uint128 _amount) public onlyAdmin {
+      function updatePayment(address _user, uint256 _ID, uint128 _amount) public onlyAdmin {
         require(_ID > 0,"Gas Contract - Update Payment function - ID must be greater than 0");
         require(_amount > 0,"Gas Contract - Update Payment function - Amount must be greater than 0");
         require(_user != address(0) ,"Gas Contract - Update Payment function - Administrator must have a valid non zero address");
         for (uint256 ii=0;ii<payments[_user].length;ii++){
-            Payment memory thisPayment = payments[_user][ii];
-
+            uint256 lastUpdate = block.timestamp;
+            address updatedBy = msg.sender;
             
-            if(thisPayment.paymentID==_ID){
-               uint256 lastUpdate = block.timestamp;
-                address updatedBy = msg.sender;
+            if(payments[_user][ii].paymentID==_ID){
                payments[_user][ii].lastUpdate =  lastUpdate;
                payments[_user][ii].updatedBy = updatedBy;
                payments[_user][ii].amount = _amount;
