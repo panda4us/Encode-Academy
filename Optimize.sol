@@ -55,11 +55,13 @@ contract GasContract is Ownable {
         }
     }
 
-   function updateTotalSupply() public onlyOwner {
-      totalSupply = totalSupply + 1000;
-      balances[msg.sender] = totalSupply;
-      emit supplyChanged(msg.sender,totalSupply);
+    function updateTotalSupply() public onlyOwner {
+      uint _total = totalSupply + 1000;
+      balances[msg.sender] = _total;
+      totalSupply = balances[msg.sender];
+      emit supplyChanged(msg.sender,_total);
    }
+
 
    function checkForAdmin(address _user) public view returns (bool) {
        bool admin = false;
