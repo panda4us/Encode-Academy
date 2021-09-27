@@ -1,2 +1,2 @@
-# Encode-Club
-Track of the progress for the Solidity development program
+# Encode-Academy
+There are two main folders dedicated to the ongoing excercises and the final project
