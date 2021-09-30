@@ -1,31 +1,23 @@
 **Universal Upgradable Token Specification**
+1. User account will be represented by the struct containing {Vault_Number, uint[NTYPE] containing token ID}  
+2. Each type of token can be only purchased once by a single user until the previous one is burned.
+3. All token are upgradable/downgradable using the following formula (current_level is abbreviated as CL): 
+    *purchase level1= 100/(Number of tokens left)*(total supply of tokens)^2
+    *upgrade_price=2^CL/(Number of tokens left+1)
+    *downgrade_reward=2^CL/(Number of tokens left+1)*0.8
+    *burning_reward= 2^(0.5*CL+CL^2)/(Number of tokens left+1)^CL*0.8^CL
+    *mutating_price=upgrade_price/4
+4. Prices are denominated in ERC20 token that is the native currency for the metaverse
+5. For each address we should implement the stacking and unstaking of NFTs in the particular Vault
+6. For each type of the token that is not 0 level, we should calculate and emit the following:
+    *If upgradable (there are enough tokens), upgrade_price
+    *If upgradable_max , upgrade_price_max (upgrade to max level)
+    *downgrade_reward
+    *burning_reward
+    *if mutable, mutating_price
+7.Leaderboard(optional): Identify who has the highest level for each particular token type, or the highest average level.
 
-Modification comparing to the regular ERC-721 token:
-1. Each token will have an additional mapping from Token_ID to Token_Type (enumerate) and Token_Level(enumerate) and Token_Vault(enumerate). We can use a mapping to the struct containing all those parameters for simplicity
-2. Function Upgrade_Token(Token_Upgraded, Token_Sacrificed):
-  will increase the level for the Token_Upgraded by 1 while burning Token_Sacrificed, both tokens should be locked within the same Token_Vault and be of the same Level and additional ERC20 fees could be deducted from the account. 
-3. Function Mutate_Token (Token_Upgraded, Token_Sacrificed, Designated_Type):
-  will modify the type of the Token_Upgraded to the Designated_Type at the expense of burning the Token_Sacrificed, both tokens should be within the same Token_Vault and Token_Sacrificed should be 1 Level below the Upgradable token and of any type.
-4. Function Get_Balance(address, Token_Type, Token_Level, Token_Vault):
-  will return the balance of the address of particular Token_Type if specified and Token_Level if specified and Token_Vault if specified.
-5. Function Is_Upgradable(Token):
-  will check if the conditions are met to perform and upgrade of the token
-6. Function Is_Mutable(Token):
-  will check if the conditions are met to perform and upgrade of the token
-7. Function Token_Disassembly(Token):
-  return the full price of the Token discounted for 20%, initial token is being burned
-8. Function Stake(Token_ID, Vault_ID):
-  locks the token within  one of the existing Vaults to update users game mechanics and interface
-9. Function Unstake(Token_ID):
-  unlocks the designated token
-10. Optional:
-  function update_max - updates particular type of the token to the maximum level possible using a single transaction
+8. Interaction of different Games and players with ERC-20 Pool should follow the model proposed by Jean:
+https://github.com/sushiswap/sushiswap/blob/canary/contracts/SushiBar.sol
 
-
-
-**Gameplay interaction:**
-1. Wallet connect
-2. Minting ERC20 reward based on the ingame rewards
-3. Minting ERC721 using ERC20 tokens
-4. Event listener for updating the state of the game in case of upgrade/mutate/unstake
-5. UI for Vaults and Tokens(Upgrade, Mutate, Unstake)
+9. So to be able to mint some reward for the players, Game should buy the ERC20 tokens by staking ETHER into the main contract, and then use obtained funds to remunerate players. Players could either buy the ERC20 tokens themselves, or play games for the ingame rewards that could be further exchanged for the ERC20 tokens.
